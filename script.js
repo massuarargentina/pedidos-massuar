@@ -183,7 +183,9 @@ setInterval(() => {
 
 
 
-/* MASSUAR v3.3 - buscador, resaltado y aviso si no hay productos */
+
+
+/* MASSUAR v3.4 - resaltado y aviso si no hay productos */
 (function(){
   function qtyValue(input){
     const n = parseInt(String(input && input.value || '').replace(/[^0-9]/g, ''), 10);
@@ -191,15 +193,7 @@ setInterval(() => {
   }
 
   function getProductFromInput(input){
-    return input.closest('.form-product-item') ||
-           input.closest('.form-product-container') ||
-           input.closest('[data-wrapper-react="true"]') ||
-           input.closest('li') ||
-           input.parentElement;
-  }
-
-  function getProductText(product){
-    return (product && product.innerText || '').replace(/\s+/g, ' ').trim();
+    return input.closest('.form-product-item') || input.closest('li') || input.parentElement;
   }
 
   function allQtyInputs(){
@@ -246,30 +240,6 @@ setInterval(() => {
     });
   }
 
-  function applySearch(){
-    const input = document.getElementById('productSearch');
-    const status = document.getElementById('searchStatus');
-    if(!input) return;
-
-    const term = input.value.trim().toLowerCase();
-    let total = 0;
-    let visible = 0;
-
-    const products = Array.from(document.querySelectorAll('.form-product-item'));
-    products.forEach(product => {
-      total++;
-      const text = getProductText(product).toLowerCase();
-      const match = !term || text.includes(term);
-      product.classList.toggle('massuar-product-hidden', !match);
-      if(match) visible++;
-    });
-
-    if(status){
-      if(!term) status.textContent = '';
-      else status.textContent = visible ? `${visible} producto(s) encontrado(s).` : 'No se encontraron productos.';
-    }
-  }
-
   function preventEmptySubmit(event){
     const form = event.target && event.target.closest ? event.target.closest('form.jotform-form') : null;
     if(!form) return;
@@ -283,47 +253,24 @@ setInterval(() => {
     }
   }
 
-  function bindV33(){
-    document.addEventListener('input', function(e){
-      if(e.target && e.target.classList && e.target.classList.contains('form-product-custom_quantity')){
-        highlightSelectedProducts();
-      }
-      if(e.target && e.target.id === 'productSearch'){
-        applySearch();
-      }
-    }, true);
-
-    document.addEventListener('change', function(e){
-      if(e.target && e.target.classList && e.target.classList.contains('form-product-custom_quantity')){
-        highlightSelectedProducts();
-      }
-    }, true);
-
-    document.addEventListener('submit', preventEmptySubmit, true);
-
-    document.addEventListener('click', function(e){
-      if(e.target && e.target.id === 'clearSearch'){
-        const search = document.getElementById('productSearch');
-        if(search){
-          search.value = '';
-          applySearch();
-          search.focus();
-        }
-      }
-    }, true);
-
-    const obs = new MutationObserver(function(){
+  document.addEventListener('input', function(e){
+    if(e.target && e.target.classList && e.target.classList.contains('form-product-custom_quantity')){
       highlightSelectedProducts();
-      applySearch();
-    });
-    obs.observe(document.body, {childList:true, subtree:true});
+    }
+  }, true);
 
-    setInterval(highlightSelectedProducts, 1500);
-  }
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.classList && e.target.classList.contains('form-product-custom_quantity')){
+      highlightSelectedProducts();
+    }
+  }, true);
 
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', bindV33);
-  }else{
-    bindV33();
-  }
+  document.addEventListener('submit', preventEmptySubmit, true);
+
+  const obs = new MutationObserver(function(){
+    highlightSelectedProducts();
+  });
+  obs.observe(document.body, {childList:true, subtree:true});
+
+  setInterval(highlightSelectedProducts, 1500);
 })();
