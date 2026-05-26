@@ -7,6 +7,21 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <section id="accessGate" class="access-gate">
+    <div class="access-card">
+      <h1>PEDIDOS MASSUAR</h1>
+      <p>Acceso exclusivo para clientes.</p>
+      <form id="accessForm">
+        <label for="accessPassword">Contraseña</label>
+        <input type="password" id="accessPassword" autocomplete="current-password" placeholder="Ingresá la contraseña">
+        <button type="submit">Ingresar</button>
+        <small id="accessError"></small>
+      </form>
+    </div>
+  </section>
+
+  <div id="protectedContent" class="protected-content" hidden>
+
   <header class="topbar">
     <div>
       <h1>PEDIDOS MASSUAR</h1>
@@ -50,5 +65,6 @@
   </main>
 
   <script src="script.js"></script>
+  </div>
 </body>
 </html>

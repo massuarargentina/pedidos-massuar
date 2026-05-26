@@ -180,3 +180,45 @@ setInterval(() => {
   updateCart();
   resizeFrame();
 }, 700);
+
+
+
+/* MASSUAR - acceso con contraseña simple
+   Cambiar la clave editando MASSUAR_PASSWORD.
+   Nota: esto es una barrera simple para clientes, no seguridad bancaria.
+*/
+(function(){
+  const MASSUAR_PASSWORD = "MASSUAR";
+
+  const gate = document.getElementById("accessGate");
+  const content = document.getElementById("protectedContent");
+  const form = document.getElementById("accessForm");
+  const input = document.getElementById("accessPassword");
+  const error = document.getElementById("accessError");
+
+  if(!gate || !content || !form || !input) return;
+
+  function unlock(){
+    gate.style.display = "none";
+    content.hidden = false;
+    sessionStorage.setItem("massuar_access_ok", "1");
+    setTimeout(function(){
+      window.dispatchEvent(new Event("resize"));
+    }, 300);
+  }
+
+  if(sessionStorage.getItem("massuar_access_ok") === "1"){
+    unlock();
+  }
+
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    if(input.value.trim() === MASSUAR_PASSWORD){
+      unlock();
+    }else{
+      error.textContent = "Contraseña incorrecta.";
+      input.focus();
+      input.select();
+    }
+  });
+})();
