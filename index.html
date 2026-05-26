@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PEDIDOS MASSUAR</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="site-header">
+  <header class="topbar">
     <div>
       <h1>PEDIDOS MASSUAR</h1>
       <p>Completá tus datos, seleccioná cantidades y revisá el resumen antes de enviar.</p>
@@ -15,26 +15,35 @@
   </header>
 
   <main class="layout">
-    <section class="form-panel" id="formPanel">
-      <div id="formHost">Cargando formulario...</div>
+    <section class="form-panel" aria-label="Formulario de pedido">
+      <iframe id="formFrame" src="formulario.html" title="Formulario de pedidos MASSUAR"></iframe>
     </section>
 
-    <aside class="cart-panel" id="cartPanel">
+    <aside class="cart-panel" aria-label="Resumen del pedido">
       <div class="cart-card">
-        <div class="cart-top">
+        <div class="cart-header">
           <div>
-            <span class="eyebrow">RESUMEN EN VIVO</span>
+            <span class="eyebrow">Resumen en vivo</span>
             <h2>🛒 Tu pedido</h2>
           </div>
-          <button type="button" id="clearCart">Vaciar</button>
+          <button id="clearCart" type="button">Vaciar</button>
         </div>
 
-        <div class="cart-stats">
-          <div><strong id="productCount">0</strong><span>productos</span></div>
-          <div><strong id="unitCount">0</strong><span>unidades</span></div>
+        <div class="stats">
+          <div>
+            <strong id="selectedProducts">0</strong>
+            <span>productos</span>
+          </div>
+          <div>
+            <strong id="totalUnits">0</strong>
+            <span>unidades</span>
+          </div>
         </div>
 
-        <div id="cartItems" class="cart-items">Todavía no seleccionaste productos.</div>
+        <div id="cartItems" class="cart-items empty">
+          Todavía no seleccionaste productos.
+        </div>
+
         <p class="cart-note">El resumen es orientativo. El pedido se envía normalmente por Jotform.</p>
       </div>
     </aside>
