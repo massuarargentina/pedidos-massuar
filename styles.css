@@ -212,7 +212,19 @@ body {
 .protected-content[hidden]{
   display:none !important;
 }
-/* MASSUAR - canastito categorías visible */
-.form-product-category-item.title_collapsed.has_selected_product .selected-items-icon {
-    filter: brightness(0) saturate(100%) invert(24%) sepia(15%) saturate(1046%) hue-rotate(38deg) brightness(95%) contrast(89%);
+/* MASSUAR - canastito y número en categorías */
+.form-product-category-item.title_collapsed.has_selected_product .selected-items-icon,
+.form-product-category-item.title_expanded.has_selected_product .selected-items-icon {
+  color: #46552a !important;
+  background-color: #e7f1cb !important;
+  background-image: url("https://cdn.jotfor.ms/assets/img/payments/shopping_bag.svg") !important;
+  filter: none !important;
+  text-shadow: none !important;
+  border: 1px solid #46552a !important;
+}
+
+/* fuerza visible el texto x3 */
+.form-product-category-item.has_selected_product .selected-items-icon::after,
+.form-product-category-item.has_selected_product .selected-items-icon::before {
+  color: #46552a !important;
 }
