@@ -1,11 +1,14 @@
 const frame = document.getElementById('formFrame');
+const formPanel = document.getElementById('formPanel');
 const cartItems = document.getElementById('cartItems');
 const selectedProducts = document.getElementById('selectedProducts');
 const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
+
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
+let submitPending = false;
 
 function getDoc() {
   try { return frame.contentDocument || frame.contentWindow.document; }
@@ -94,29 +97,79 @@ function escapeHtml(value) {
 
 function isThankYouPage(doc) {
   const text = (doc.body && doc.body.innerText || '').toLowerCase();
-  const hasThanks = text.includes('¡gracias') || text.includes('gracias') && text.includes('orden de pedido ha sido recibida');
-  const hasThankYouNode = !!doc.querySelector('.thankyou, .form-thankyou, #stage .thankyou, [class*="thank"]');
+  const hasThanks = text.includes('¡gracias') || (text.includes('gracias') && text.includes('orden de pedido')) || text.includes('thank you');
+  const hasThankYouNode = !!doc.querySelector('.thankyou, .form-thankyou, #stage .thankyou, [class*="thank"], [id*="thank"]');
   return hasThanks || hasThankYouNode;
+}
+
+function markSubmitPending() {
+  submitPending = true;
+  setTimeout(handleThankYouIfNeeded, 1200);
+  setTimeout(handleThankYouIfNeeded, 2500);
+  setTimeout(handleThankYouIfNeeded, 4500);
+}
+
+function showSubmittedState() {
+  if (thankYouHandled) return;
+  thankYouHandled = true;
+  submitPending = false;
+  setEmptyCart('Pedido enviado correctamente. Gracias.');
+  formPanel.classList.add('submitted');
+  frame.style.height = '520px';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function handleThankYouIfNeeded() {
   const doc = getDoc();
-  if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
 
-  thankYouHandled = true;
-  setEmptyCart('Pedido enviado correctamente. Gracias.');
+  // Después de enviar, Jotform puede cargar una página externa dentro del iframe.
+  // En ese caso el navegador no nos deja leerla, pero podemos limpiar carrito y ocultar el pie desde afuera.
+  if (!doc && submitPending) {
+    showSubmittedState();
+    return;
+  }
 
-  setTimeout(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    resizeFrame();
-  }, 200);
+  if (!doc || thankYouHandled) return;
+
+  if (isThankYouPage(doc)) {
+    showSubmittedState();
+    hideJotformBranding(doc);
+    return;
+  }
+}
+
+function hideJotformBranding(doc) {
+  if (!doc || !doc.head) return;
+  if (doc.getElementById('massuar-hide-jotform-branding')) return;
+
+  const style = doc.createElement('style');
+  style.id = 'massuar-hide-jotform-branding';
+  style.textContent = `
+    .jf-branding,
+    .formFooter,
+    .formFooter-wrapper,
+    .formFooter-content,
+    .formFooter-heightMask,
+    .formFooter-leftSide,
+    .formFooter-rightSide,
+    [class*="branding"],
+    [class*="Branding"],
+    a[href*="jotform.com"],
+    a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+  `;
+  doc.head.appendChild(style);
 }
 
 function injectFrameHelpers() {
   const doc = getDoc();
-  if (!doc || frameDoc === doc) return;
+  if (!doc) return;
+
+  hideJotformBranding(doc);
+
+  if (frameDoc === doc) return;
   frameDoc = doc;
   thankYouHandled = false;
+  formPanel.classList.remove('submitted');
 
   const style = doc.createElement('style');
   style.textContent = `
@@ -128,25 +181,23 @@ function injectFrameHelpers() {
     .form-product-item [data-wrapper-react="true"] .form-product-price,
     #coupon-container,
     .form-payment-total,
-    .form-payment-subtotal,
-    .jf-branding,
-    .formFooter,
-    .formFooter-wrapper,
-    .formFooter-content,
-    .formFooter-heightMask,
-    .formFooter-leftSide,
-    .formFooter-rightSide,
-    a[href*="jotform.com"],
-    a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
+    .form-payment-subtotal { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
   `;
   doc.head.appendChild(style);
 
   doc.addEventListener('input', updateCart, true);
   doc.addEventListener('change', updateCart, true);
   doc.addEventListener('keyup', updateCart, true);
+
+  const form = doc.querySelector('form.jotform-form, form');
+  if (form) form.addEventListener('submit', markSubmitPending, true);
+
+  const submitButtons = doc.querySelectorAll('button[type="submit"], input[type="submit"], #input_2, .form-submit-button');
+  submitButtons.forEach(btn => btn.addEventListener('click', markSubmitPending, true));
 }
 
 function resizeFrame() {
+  if (formPanel.classList.contains('submitted')) return;
   const doc = getDoc();
   if (!doc || !doc.body) return;
   const height = Math.max(
@@ -168,9 +219,14 @@ clearCart.addEventListener('click', () => {
 });
 
 frame.addEventListener('load', () => {
+  // Si el iframe cargó y ya no se puede leer, normalmente es porque Jotform mostró el agradecimiento remoto.
+  if (submitPending && !getDoc()) {
+    showSubmittedState();
+    return;
+  }
   injectFrameHelpers();
-  updateCart();
   handleThankYouIfNeeded();
+  updateCart();
   resizeFrame();
 });
 

@@ -140,3 +140,27 @@ body {
   .cart-items { max-height: 260px; }
   #formFrame { min-height: 1800px; }
 }
+
+/* Estado después de enviar: recorta el agradecimiento de Jotform para tapar su pie promocional */
+.form-panel {
+  position: relative;
+}
+.form-panel.submitted {
+  max-height: 520px;
+  overflow: hidden;
+}
+.form-panel.submitted::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 86px;
+  background: #f4ffe0;
+  pointer-events: none;
+  z-index: 5;
+}
+.form-panel.submitted #formFrame {
+  min-height: 520px !important;
+  height: 520px !important;
+}
