@@ -212,12 +212,7 @@ body {
 .protected-content[hidden]{
   display:none !important;
 }
-/* MASSUAR - mejora visibilidad icono carrito/canastito */
-.form-product-item .form-product-container .form-product-selected,
-.form-product-item .form-product-container .pictos,
-.form-product-item .form-product-container .icon_cart,
-.form-product-item .form-product-container [class*="cart"] {
-    color: #46552a !important;
-    fill: #46552a !important;
-    opacity: 1 !important;
+/* MASSUAR - canastito categorías visible */
+.form-product-category-item.title_collapsed.has_selected_product .selected-items-icon {
+    filter: brightness(0) saturate(100%) invert(24%) sepia(15%) saturate(1046%) hue-rotate(38deg) brightness(95%) contrast(89%);
 }
