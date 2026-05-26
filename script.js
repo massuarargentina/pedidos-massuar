@@ -180,3 +180,150 @@ setInterval(() => {
   updateCart();
   resizeFrame();
 }, 700);
+
+
+
+/* MASSUAR v3.3 - buscador, resaltado y aviso si no hay productos */
+(function(){
+  function qtyValue(input){
+    const n = parseInt(String(input && input.value || '').replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function getProductFromInput(input){
+    return input.closest('.form-product-item') ||
+           input.closest('.form-product-container') ||
+           input.closest('[data-wrapper-react="true"]') ||
+           input.closest('li') ||
+           input.parentElement;
+  }
+
+  function getProductText(product){
+    return (product && product.innerText || '').replace(/\s+/g, ' ').trim();
+  }
+
+  function allQtyInputs(){
+    return Array.from(document.querySelectorAll('.form-product-custom_quantity'));
+  }
+
+  function selectedQtyInputs(){
+    return allQtyInputs().filter(input => qtyValue(input) > 0);
+  }
+
+  function showWarning(message){
+    let box = document.querySelector('.massuar-empty-order-warning');
+    if(!box){
+      box = document.createElement('div');
+      box.className = 'massuar-empty-order-warning';
+      document.body.appendChild(box);
+    }
+    box.textContent = message;
+    clearTimeout(window.__massuarWarningTimer);
+    window.__massuarWarningTimer = setTimeout(() => box.remove(), 3500);
+  }
+
+  function highlightSelectedProducts(){
+    allQtyInputs().forEach(input => {
+      const product = getProductFromInput(input);
+      if(!product) return;
+
+      const selected = qtyValue(input) > 0;
+      product.classList.toggle('massuar-product-selected', selected);
+
+      const nameEl = product.querySelector('.form-product-name') || product.querySelector('label') || product;
+      let badge = product.querySelector('.massuar-selected-badge');
+
+      if(selected && !badge && nameEl){
+        badge = document.createElement('span');
+        badge.className = 'massuar-selected-badge';
+        badge.textContent = 'Seleccionado';
+        nameEl.appendChild(badge);
+      }
+
+      if(!selected && badge){
+        badge.remove();
+      }
+    });
+  }
+
+  function applySearch(){
+    const input = document.getElementById('productSearch');
+    const status = document.getElementById('searchStatus');
+    if(!input) return;
+
+    const term = input.value.trim().toLowerCase();
+    let total = 0;
+    let visible = 0;
+
+    const products = Array.from(document.querySelectorAll('.form-product-item'));
+    products.forEach(product => {
+      total++;
+      const text = getProductText(product).toLowerCase();
+      const match = !term || text.includes(term);
+      product.classList.toggle('massuar-product-hidden', !match);
+      if(match) visible++;
+    });
+
+    if(status){
+      if(!term) status.textContent = '';
+      else status.textContent = visible ? `${visible} producto(s) encontrado(s).` : 'No se encontraron productos.';
+    }
+  }
+
+  function preventEmptySubmit(event){
+    const form = event.target && event.target.closest ? event.target.closest('form.jotform-form') : null;
+    if(!form) return;
+
+    if(selectedQtyInputs().length === 0){
+      event.preventDefault();
+      event.stopPropagation();
+      showWarning('Agregá al menos un producto antes de enviar el pedido.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return false;
+    }
+  }
+
+  function bindV33(){
+    document.addEventListener('input', function(e){
+      if(e.target && e.target.classList && e.target.classList.contains('form-product-custom_quantity')){
+        highlightSelectedProducts();
+      }
+      if(e.target && e.target.id === 'productSearch'){
+        applySearch();
+      }
+    }, true);
+
+    document.addEventListener('change', function(e){
+      if(e.target && e.target.classList && e.target.classList.contains('form-product-custom_quantity')){
+        highlightSelectedProducts();
+      }
+    }, true);
+
+    document.addEventListener('submit', preventEmptySubmit, true);
+
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id === 'clearSearch'){
+        const search = document.getElementById('productSearch');
+        if(search){
+          search.value = '';
+          applySearch();
+          search.focus();
+        }
+      }
+    }, true);
+
+    const obs = new MutationObserver(function(){
+      highlightSelectedProducts();
+      applySearch();
+    });
+    obs.observe(document.body, {childList:true, subtree:true});
+
+    setInterval(highlightSelectedProducts, 1500);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', bindV33);
+  }else{
+    bindV33();
+  }
+})();
