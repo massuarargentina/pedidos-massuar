@@ -212,19 +212,26 @@ body {
 .protected-content[hidden]{
   display:none !important;
 }
-/* MASSUAR - canastito y número en categorías */
-.form-product-category-item.title_collapsed.has_selected_product .selected-items-icon,
-.form-product-category-item.title_expanded.has_selected_product .selected-items-icon {
-  color: #46552a !important;
-  background-color: #e7f1cb !important;
-  background-image: url("https://cdn.jotfor.ms/assets/img/payments/shopping_bag.svg") !important;
-  filter: none !important;
-  text-shadow: none !important;
-  border: 1px solid #46552a !important;
+.form-product-category-item.title_collapsed.has_selected_product .selected-items-icon {
+    display: inline !important;
+    position: relative;
+    color: #46552a !important;
+    font-size: 13px !important;
+    font-weight: bold !important;
+    border-radius: 3px !important;
+    padding: 8px 10px 7px 34px !important;
+    background-image: none !important;
+    margin-left: 6px !important;
+    background-color: #e7f1cb !important;
+    border: 1px solid #46552a !important;
+}
+.form-product-category-item.title_collapsed.has_selected_product .selected-items-icon::before {
+    content: "🛒";
+    position: absolute;
+    left: 10px;
+    top: 5px;
+    font-size: 14px;
+    color: #46552a !important;
 }
 
-/* fuerza visible el texto x3 */
-.form-product-category-item.has_selected_product .selected-items-icon::after,
-.form-product-category-item.has_selected_product .selected-items-icon::before {
-  color: #46552a !important;
-}
+
