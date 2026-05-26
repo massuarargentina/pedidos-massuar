@@ -5,6 +5,7 @@ const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
 let frameDoc = null;
 let lastSignature = '';
+let thankYouHandled = false;
 
 function getDoc() {
   try { return frame.contentDocument || frame.contentWindow.document; }
@@ -35,9 +36,18 @@ function getQuantityInputs() {
   return Array.from(doc.querySelectorAll('.form-product-custom_quantity, input[id*="_quantity_"]'));
 }
 
+function setEmptyCart(message = 'Todavía no seleccionaste productos.') {
+  lastSignature = '';
+  selectedProducts.textContent = '0';
+  totalUnits.textContent = '0';
+  cartItems.className = 'cart-items empty';
+  cartItems.textContent = message;
+}
+
 function updateCart() {
   const doc = getDoc();
   if (!doc) return;
+  if (isThankYouPage(doc)) return;
 
   const items = [];
   const quantityInputs = getQuantityInputs();
@@ -60,8 +70,7 @@ function updateCart() {
   totalUnits.textContent = total;
 
   if (!items.length) {
-    cartItems.className = 'cart-items empty';
-    cartItems.textContent = 'Todavía no seleccionaste productos.';
+    setEmptyCart();
     return;
   }
 
@@ -83,10 +92,31 @@ function escapeHtml(value) {
     .replaceAll("'", '&#039;');
 }
 
+function isThankYouPage(doc) {
+  const text = (doc.body && doc.body.innerText || '').toLowerCase();
+  const hasThanks = text.includes('¡gracias') || text.includes('gracias') && text.includes('orden de pedido ha sido recibida');
+  const hasThankYouNode = !!doc.querySelector('.thankyou, .form-thankyou, #stage .thankyou, [class*="thank"]');
+  return hasThanks || hasThankYouNode;
+}
+
+function handleThankYouIfNeeded() {
+  const doc = getDoc();
+  if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
+
+  thankYouHandled = true;
+  setEmptyCart('Pedido enviado correctamente. Gracias.');
+
+  setTimeout(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    resizeFrame();
+  }, 200);
+}
+
 function injectFrameHelpers() {
   const doc = getDoc();
   if (!doc || frameDoc === doc) return;
   frameDoc = doc;
+  thankYouHandled = false;
 
   const style = doc.createElement('style');
   style.textContent = `
@@ -98,7 +128,16 @@ function injectFrameHelpers() {
     .form-product-item [data-wrapper-react="true"] .form-product-price,
     #coupon-container,
     .form-payment-total,
-    .form-payment-subtotal { display: none !important; }
+    .form-payment-subtotal,
+    .jf-branding,
+    .formFooter,
+    .formFooter-wrapper,
+    .formFooter-content,
+    .formFooter-heightMask,
+    .formFooter-leftSide,
+    .formFooter-rightSide,
+    a[href*="jotform.com"],
+    a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
   `;
   doc.head.appendChild(style);
 
@@ -113,7 +152,7 @@ function resizeFrame() {
   const height = Math.max(
     doc.body.scrollHeight,
     doc.documentElement ? doc.documentElement.scrollHeight : 0,
-    1400
+    900
   );
   frame.style.height = `${height + 60}px`;
 }
@@ -124,18 +163,20 @@ clearCart.addEventListener('click', () => {
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  lastSignature = '';
+  setEmptyCart();
   updateCart();
 });
 
 frame.addEventListener('load', () => {
   injectFrameHelpers();
   updateCart();
+  handleThankYouIfNeeded();
   resizeFrame();
 });
 
 setInterval(() => {
   injectFrameHelpers();
+  handleThankYouIfNeeded();
   updateCart();
   resizeFrame();
 }, 700);
