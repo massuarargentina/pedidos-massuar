@@ -212,3 +212,12 @@ body {
 .protected-content[hidden]{
   display:none !important;
 }
+/* MASSUAR - mejora visibilidad icono carrito/canastito */
+.form-product-item .form-product-container .form-product-selected,
+.form-product-item .form-product-container .pictos,
+.form-product-item .form-product-container .icon_cart,
+.form-product-item .form-product-container [class*="cart"] {
+    color: #46552a !important;
+    fill: #46552a !important;
+    opacity: 1 !important;
+}
