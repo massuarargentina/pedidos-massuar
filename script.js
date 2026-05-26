@@ -109,7 +109,7 @@ function handleThankYouIfNeeded() {
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     resizeFrame();
-  }, 200);
+  }, 5000);
 }
 
 function injectFrameHelpers() {
@@ -180,43 +180,3 @@ setInterval(() => {
   updateCart();
   resizeFrame();
 }, 700);
-
-
-/* MASSUAR v3.1 - volver arriba 5 segundos después del mensaje de gracias */
-(function(){
-  let massuarGraciasDetectado = false;
-
-  function massuarVolverAlInicioDespuesDeGracias(){
-    if (massuarGraciasDetectado) return;
-
-    const textoPagina = (document.body && document.body.innerText || "").toLowerCase();
-
-    const hayGracias =
-      textoPagina.includes("¡gracias!") ||
-      textoPagina.includes("gracias!") ||
-      textoPagina.includes("tu orden de pedido ha sido recibida") ||
-      textoPagina.includes("orden de pedido ha sido recibida");
-
-    if (!hayGracias) return;
-
-    massuarGraciasDetectado = true;
-
-    setTimeout(function(){
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      const carrito = document.getElementById("cartItems");
-      const productCount = document.getElementById("productCount");
-      const unitCount = document.getElementById("unitCount");
-
-      if (carrito) carrito.textContent = "Todavía no seleccionaste productos.";
-      if (productCount) productCount.textContent = "0";
-      if (unitCount) unitCount.textContent = "0";
-    }, 5000);
-  }
-
-  const observer = new MutationObserver(massuarVolverAlInicioDespuesDeGracias);
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  setInterval(massuarVolverAlInicioDespuesDeGracias, 1000);
-})();
-
