@@ -4,6 +4,7 @@ const selectedProducts = document.getElementById('selectedProducts');
 const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
 const finishOrder = document.getElementById('finishOrder');
+const formPanel = document.querySelector('.form-panel');
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
@@ -100,128 +101,46 @@ function isThankYouPage(doc) {
   return hasThanks || hasThankYouNode;
 }
 
-function hideThankYouBranding(doc) {
-  if (!doc || !doc.head) return;
-
-  if (!doc.getElementById('massuar-thankyou-style')) {
-    const style = doc.createElement('style');
-    style.id = 'massuar-thankyou-style';
-    style.textContent = `
-      .jf-branding,
-      .formFooter,
-      .formFooter-wrapper,
-      .formFooter-content,
-      .formFooter-heightMask,
-      .formFooter-leftSide,
-      .formFooter-rightSide,
-      .thankyou-footer,
-      .jfThankYou-footer,
-      .jotform-ad,
-      .jotform-ad-wrapper,
-      [class*="branding"],
-      [class*="Branding"],
-      [class*="footer"] a[href*="jotform"],
-      a[href*="jotform.com"],
-      a[href*="jotfor.ms"] {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        overflow: hidden !important;
-      }
-
-      .massuar-thankyou-actions {
-        display: flex !important;
-        justify-content: center !important;
-        margin: 28px auto 0 !important;
-        width: 100% !important;
-        position: relative !important;
-        z-index: 9999 !important;
-      }
-
-      .massuar-exit-button {
-        border: 0 !important;
-        border-radius: 14px !important;
-        padding: 16px 56px !important;
-        min-width: 280px !important;
-        max-width: 420px !important;
-        background: #46552a !important;
-        color: #fff !important;
-        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-        font-size: 18px !important;
-        font-weight: 900 !important;
-        cursor: pointer !important;
-        box-shadow: 0 10px 22px rgba(70,85,42,.18) !important;
-      }
-
-      .massuar-exit-button:hover {
-        filter: brightness(.96) !important;
-      }
-    `;
-    doc.head.appendChild(style);
-  }
-
-  Array.from(doc.querySelectorAll('a[href*="jotform.com"], a[href*="jotfor.ms"]')).forEach(link => {
-    let node = link;
-    for (let i = 0; i < 4 && node && node.parentElement && node.parentElement !== doc.body; i += 1) {
-      const text = (node.parentElement.innerText || '').toLowerCase();
-      if (text.includes('create your own jotform') || text.includes('jotform') || text.includes('it’s free') || text.includes("it's free")) {
-        node = node.parentElement;
-      }
-    }
-    if (node && node !== doc.body) {
-      node.style.setProperty('display', 'none', 'important');
-      node.style.setProperty('visibility', 'hidden', 'important');
-      node.style.setProperty('height', '0', 'important');
-      node.style.setProperty('overflow', 'hidden', 'important');
-    }
-  });
-}
-
-function addExitButtonToThankYou(doc) {
-  if (!doc || doc.getElementById('massuarExitButton')) return;
-
-  const wrap = doc.createElement('div');
-  wrap.className = 'massuar-thankyou-actions';
-
-  const button = doc.createElement('button');
-  button.id = 'massuarExitButton';
-  button.className = 'massuar-exit-button';
-  button.type = 'button';
-  button.textContent = 'Salir';
-
-  button.addEventListener('click', () => {
-    sessionStorage.removeItem('massuar_access_ok');
-    window.location.reload();
-  });
-
-  wrap.appendChild(button);
-
-  const thankYouBox = doc.querySelector('.thankyou, .form-thankyou, [class*="thank"], #stage');
-  if (thankYouBox && thankYouBox !== doc.body) {
-    thankYouBox.appendChild(wrap);
-  } else {
-    doc.body.appendChild(wrap);
-  }
-}
-
 function handleThankYouIfNeeded() {
   const doc = getDoc();
-  if (!doc || !isThankYouPage(doc)) return;
+  if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
 
-  hideThankYouBranding(doc);
-  addExitButtonToThankYou(doc);
-
-  if (thankYouHandled) return;
   thankYouHandled = true;
   setEmptyCart('Pedido enviado correctamente. Gracias.');
+  showThankYouOverlay();
 
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     resizeFrame();
-  }, 700);
+  }, 250);
+}
+
+function showThankYouOverlay() {
+  if (!formPanel || document.getElementById('thankYouOverlay')) return;
+
+  formPanel.classList.add('order-complete');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'thankYouOverlay';
+  overlay.className = 'thank-you-overlay';
+  overlay.innerHTML = `
+    <div class="thank-you-card">
+      <div class="thank-you-icon">✓</div>
+      <h2>¡GRACIAS!</h2>
+      <p>Tu orden de pedido ha sido recibida. En breve nos pondremos en contacto.</p>
+      <button id="exitOrder" type="button" class="exit-order">Salir</button>
+    </div>
+  `;
+
+  formPanel.appendChild(overlay);
+
+  const exitOrder = document.getElementById('exitOrder');
+  if (exitOrder) exitOrder.addEventListener('click', resetToStart);
+}
+
+function resetToStart() {
+  sessionStorage.removeItem('massuar_access_ok');
+  window.location.href = window.location.pathname;
 }
 
 function injectFrameHelpers() {
@@ -248,6 +167,18 @@ function injectFrameHelpers() {
     .formFooter-heightMask,
     .formFooter-leftSide,
     .formFooter-rightSide,
+    .thankyou-footer,
+    .jfThankYou-footer,
+    .thank-you-footer,
+    .thankyou-wrapper + div,
+    .formFooter,
+    .formFooter-wrapper,
+    .formFooter-content,
+    .formFooter-heightMask,
+    .formFooter-leftSide,
+    .formFooter-rightSide,
+    [class*="branding"],
+    [id*="branding"],
     a[href*="jotform.com"],
     a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
   `;
