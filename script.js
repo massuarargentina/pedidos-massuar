@@ -4,8 +4,6 @@ const selectedProducts = document.getElementById('selectedProducts');
 const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
 const finishOrder = document.getElementById('finishOrder');
-const thankYouScreen = document.getElementById('thankYouScreen');
-const exitOrder = document.getElementById('exitOrder');
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
@@ -102,36 +100,128 @@ function isThankYouPage(doc) {
   return hasThanks || hasThankYouNode;
 }
 
-function showThankYouScreen() {
-  if (thankYouScreen) thankYouScreen.hidden = false;
-  if (frame) frame.style.display = 'none';
-  if (finishOrder) finishOrder.hidden = true;
-  if (clearCart) clearCart.hidden = true;
+function hideThankYouBranding(doc) {
+  if (!doc || !doc.head) return;
+
+  if (!doc.getElementById('massuar-thankyou-style')) {
+    const style = doc.createElement('style');
+    style.id = 'massuar-thankyou-style';
+    style.textContent = `
+      .jf-branding,
+      .formFooter,
+      .formFooter-wrapper,
+      .formFooter-content,
+      .formFooter-heightMask,
+      .formFooter-leftSide,
+      .formFooter-rightSide,
+      .thankyou-footer,
+      .jfThankYou-footer,
+      .jotform-ad,
+      .jotform-ad-wrapper,
+      [class*="branding"],
+      [class*="Branding"],
+      [class*="footer"] a[href*="jotform"],
+      a[href*="jotform.com"],
+      a[href*="jotfor.ms"] {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+      }
+
+      .massuar-thankyou-actions {
+        display: flex !important;
+        justify-content: center !important;
+        margin: 28px auto 0 !important;
+        width: 100% !important;
+        position: relative !important;
+        z-index: 9999 !important;
+      }
+
+      .massuar-exit-button {
+        border: 0 !important;
+        border-radius: 14px !important;
+        padding: 16px 56px !important;
+        min-width: 280px !important;
+        max-width: 420px !important;
+        background: #46552a !important;
+        color: #fff !important;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+        font-size: 18px !important;
+        font-weight: 900 !important;
+        cursor: pointer !important;
+        box-shadow: 0 10px 22px rgba(70,85,42,.18) !important;
+      }
+
+      .massuar-exit-button:hover {
+        filter: brightness(.96) !important;
+      }
+    `;
+    doc.head.appendChild(style);
+  }
+
+  Array.from(doc.querySelectorAll('a[href*="jotform.com"], a[href*="jotfor.ms"]')).forEach(link => {
+    let node = link;
+    for (let i = 0; i < 4 && node && node.parentElement && node.parentElement !== doc.body; i += 1) {
+      const text = (node.parentElement.innerText || '').toLowerCase();
+      if (text.includes('create your own jotform') || text.includes('jotform') || text.includes('it’s free') || text.includes("it's free")) {
+        node = node.parentElement;
+      }
+    }
+    if (node && node !== doc.body) {
+      node.style.setProperty('display', 'none', 'important');
+      node.style.setProperty('visibility', 'hidden', 'important');
+      node.style.setProperty('height', '0', 'important');
+      node.style.setProperty('overflow', 'hidden', 'important');
+    }
+  });
 }
 
-function hideThankYouScreen() {
-  if (thankYouScreen) thankYouScreen.hidden = true;
-  if (frame) frame.style.display = '';
-  if (finishOrder) finishOrder.hidden = false;
-  if (clearCart) clearCart.hidden = false;
-}
+function addExitButtonToThankYou(doc) {
+  if (!doc || doc.getElementById('massuarExitButton')) return;
 
-function exitToStart() {
-  sessionStorage.removeItem('massuar_access_ok');
-  window.location.href = window.location.pathname;
+  const wrap = doc.createElement('div');
+  wrap.className = 'massuar-thankyou-actions';
+
+  const button = doc.createElement('button');
+  button.id = 'massuarExitButton';
+  button.className = 'massuar-exit-button';
+  button.type = 'button';
+  button.textContent = 'Salir';
+
+  button.addEventListener('click', () => {
+    sessionStorage.removeItem('massuar_access_ok');
+    window.location.reload();
+  });
+
+  wrap.appendChild(button);
+
+  const thankYouBox = doc.querySelector('.thankyou, .form-thankyou, [class*="thank"], #stage');
+  if (thankYouBox && thankYouBox !== doc.body) {
+    thankYouBox.appendChild(wrap);
+  } else {
+    doc.body.appendChild(wrap);
+  }
 }
 
 function handleThankYouIfNeeded() {
   const doc = getDoc();
-  if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
+  if (!doc || !isThankYouPage(doc)) return;
 
+  hideThankYouBranding(doc);
+  addExitButtonToThankYou(doc);
+
+  if (thankYouHandled) return;
   thankYouHandled = true;
-  showThankYouScreen();
+  setEmptyCart('Pedido enviado correctamente. Gracias.');
 
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     resizeFrame();
-  }, 300);
+  }, 700);
 }
 
 function injectFrameHelpers() {
@@ -159,15 +249,7 @@ function injectFrameHelpers() {
     .formFooter-leftSide,
     .formFooter-rightSide,
     a[href*="jotform.com"],
-    a[href*="jotfor.ms"],
-    .thankyou-footer,
-    .thankyou-subfooter,
-    .formFooter-button,
-    .jfForm-allWrapper + div,
-    [class*="branding"],
-    [class*="Branding"],
-    [class*="powered"],
-    [class*="Powered"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
+    a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
   `;
   doc.head.appendChild(style);
 
@@ -215,10 +297,6 @@ function finishOrderFromCart() {
 
 if (finishOrder) {
   finishOrder.addEventListener('click', finishOrderFromCart);
-}
-
-if (exitOrder) {
-  exitOrder.addEventListener('click', exitToStart);
 }
 
 clearCart.addEventListener('click', () => {
