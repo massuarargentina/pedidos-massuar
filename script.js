@@ -4,7 +4,8 @@ const selectedProducts = document.getElementById('selectedProducts');
 const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
 const finishOrder = document.getElementById('finishOrder');
-const formPanel = document.querySelector('.form-panel');
+const thankYouScreen = document.getElementById('thankYouScreen');
+const exitOrder = document.getElementById('exitOrder');
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
@@ -101,13 +102,16 @@ function isThankYouPage(doc) {
   return hasThanks || hasThankYouNode;
 }
 
-function handleThankYouIfNeeded() {
-  const doc = getDoc();
-  if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
+function showMassuarThankYou() {
+  const panel = document.querySelector('.form-panel');
 
-  thankYouHandled = true;
-  setEmptyCart('Pedido enviado correctamente. Gracias.');
-  showThankYouOverlay();
+  if (panel) panel.classList.add('order-sent');
+  if (thankYouScreen) thankYouScreen.hidden = false;
+  if (frame) frame.hidden = true;
+  if (finishOrder) {
+    finishOrder.disabled = true;
+    finishOrder.textContent = 'Pedido enviado';
+  }
 
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -115,32 +119,12 @@ function handleThankYouIfNeeded() {
   }, 250);
 }
 
-function showThankYouOverlay() {
-  if (!formPanel || document.getElementById('thankYouOverlay')) return;
+function handleThankYouIfNeeded() {
+  const doc = getDoc();
+  if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
 
-  formPanel.classList.add('order-complete');
-
-  const overlay = document.createElement('div');
-  overlay.id = 'thankYouOverlay';
-  overlay.className = 'thank-you-overlay';
-  overlay.innerHTML = `
-    <div class="thank-you-card">
-      <div class="thank-you-icon">✓</div>
-      <h2>¡GRACIAS!</h2>
-      <p>Tu orden de pedido ha sido recibida. En breve nos pondremos en contacto.</p>
-      <button id="exitOrder" type="button" class="exit-order">Salir</button>
-    </div>
-  `;
-
-  formPanel.appendChild(overlay);
-
-  const exitOrder = document.getElementById('exitOrder');
-  if (exitOrder) exitOrder.addEventListener('click', resetToStart);
-}
-
-function resetToStart() {
-  sessionStorage.removeItem('massuar_access_ok');
-  window.location.href = window.location.pathname;
+  thankYouHandled = true;
+  showMassuarThankYou();
 }
 
 function injectFrameHelpers() {
@@ -167,18 +151,6 @@ function injectFrameHelpers() {
     .formFooter-heightMask,
     .formFooter-leftSide,
     .formFooter-rightSide,
-    .thankyou-footer,
-    .jfThankYou-footer,
-    .thank-you-footer,
-    .thankyou-wrapper + div,
-    .formFooter,
-    .formFooter-wrapper,
-    .formFooter-content,
-    .formFooter-heightMask,
-    .formFooter-leftSide,
-    .formFooter-rightSide,
-    [class*="branding"],
-    [id*="branding"],
     a[href*="jotform.com"],
     a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
   `;
@@ -228,6 +200,15 @@ function finishOrderFromCart() {
 
 if (finishOrder) {
   finishOrder.addEventListener('click', finishOrderFromCart);
+}
+
+function exitOrderToStart() {
+  sessionStorage.removeItem('massuar_access_ok');
+  window.location.reload();
+}
+
+if (exitOrder) {
+  exitOrder.addEventListener('click', exitOrderToStart);
 }
 
 clearCart.addEventListener('click', () => {

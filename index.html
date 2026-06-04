@@ -32,6 +32,16 @@
   <main class="layout">
     <section class="form-panel" aria-label="Formulario de pedido">
       <iframe id="formFrame" src="formulario.html" title="Formulario de pedidos MASSUAR"></iframe>
+
+      <div id="thankYouScreen" class="thank-you-screen" hidden>
+        <div class="thank-you-card">
+          <div class="thank-you-icon" aria-hidden="true">✓</div>
+          <span class="eyebrow">Pedido enviado</span>
+          <h2>¡Gracias!</h2>
+          <p>Tu orden de pedido ha sido recibida. En breve nos pondremos en contacto.</p>
+          <button id="exitOrder" type="button" class="exit-order">Salir</button>
+        </div>
+      </div>
     </section>
 
     <aside class="cart-panel" aria-label="Resumen del pedido">
