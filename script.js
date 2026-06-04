@@ -3,6 +3,7 @@ const cartItems = document.getElementById('cartItems');
 const selectedProducts = document.getElementById('selectedProducts');
 const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
+const finishOrder = document.getElementById('finishOrder');
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
@@ -155,6 +156,36 @@ function resizeFrame() {
     900
   );
   frame.style.height = `${height + 60}px`;
+}
+
+
+function findSubmitButton(doc) {
+  if (!doc) return null;
+
+  return doc.querySelector(
+    '#input_2, button[type="submit"], input[type="submit"], .form-submit-button, .jf-form-buttons button, .submit-button'
+  );
+}
+
+function finishOrderFromCart() {
+  const doc = getDoc();
+  const submitButton = findSubmitButton(doc);
+
+  if (!submitButton) {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    return;
+  }
+
+  submitButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  setTimeout(() => {
+    submitButton.click();
+    resizeFrame();
+  }, 350);
+}
+
+if (finishOrder) {
+  finishOrder.addEventListener('click', finishOrderFromCart);
 }
 
 clearCart.addEventListener('click', () => {
