@@ -4,6 +4,8 @@ const selectedProducts = document.getElementById('selectedProducts');
 const totalUnits = document.getElementById('totalUnits');
 const clearCart = document.getElementById('clearCart');
 const finishOrder = document.getElementById('finishOrder');
+const thankYouScreen = document.getElementById('thankYouScreen');
+const exitOrder = document.getElementById('exitOrder');
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
@@ -100,17 +102,36 @@ function isThankYouPage(doc) {
   return hasThanks || hasThankYouNode;
 }
 
+function showThankYouScreen() {
+  if (thankYouScreen) thankYouScreen.hidden = false;
+  if (frame) frame.style.display = 'none';
+  if (finishOrder) finishOrder.hidden = true;
+  if (clearCart) clearCart.hidden = true;
+}
+
+function hideThankYouScreen() {
+  if (thankYouScreen) thankYouScreen.hidden = true;
+  if (frame) frame.style.display = '';
+  if (finishOrder) finishOrder.hidden = false;
+  if (clearCart) clearCart.hidden = false;
+}
+
+function exitToStart() {
+  sessionStorage.removeItem('massuar_access_ok');
+  window.location.href = window.location.pathname;
+}
+
 function handleThankYouIfNeeded() {
   const doc = getDoc();
   if (!doc || thankYouHandled || !isThankYouPage(doc)) return;
 
   thankYouHandled = true;
-  setEmptyCart('Pedido enviado correctamente. Gracias.');
+  showThankYouScreen();
 
   setTimeout(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     resizeFrame();
-  }, 5000);
+  }, 300);
 }
 
 function injectFrameHelpers() {
@@ -138,7 +159,15 @@ function injectFrameHelpers() {
     .formFooter-leftSide,
     .formFooter-rightSide,
     a[href*="jotform.com"],
-    a[href*="jotfor.ms"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
+    a[href*="jotfor.ms"],
+    .thankyou-footer,
+    .thankyou-subfooter,
+    .formFooter-button,
+    .jfForm-allWrapper + div,
+    [class*="branding"],
+    [class*="Branding"],
+    [class*="powered"],
+    [class*="Powered"] { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; }
   `;
   doc.head.appendChild(style);
 
@@ -186,6 +215,10 @@ function finishOrderFromCart() {
 
 if (finishOrder) {
   finishOrder.addEventListener('click', finishOrderFromCart);
+}
+
+if (exitOrder) {
+  exitOrder.addEventListener('click', exitToStart);
 }
 
 clearCart.addEventListener('click', () => {
