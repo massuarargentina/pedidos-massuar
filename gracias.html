@@ -1,23 +1,153 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gracias por tu pedido - MASSUAR</title>
-<style>
-body{margin:0;font-family:Arial,sans-serif;background:#f4ffe0;color:#46552a;display:flex;align-items:center;justify-content:center;min-height:100vh}
-.card{background:#fff;padding:40px;border-radius:24px;box-shadow:0 15px 40px rgba(70,85,42,.15);max-width:700px;text-align:center}
-h1{font-size:56px;margin:0 0 10px}
-p{font-size:22px;color:#6b7753}
-.btn{display:inline-block;margin-top:25px;background:#46552a;color:#fff;text-decoration:none;padding:16px 34px;border-radius:14px;font-weight:bold}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gracias por tu pedido - MASSUAR</title>
+  <style>
+    :root {
+      --massuar-green: #46552a;
+      --text: #233018;
+      --muted: #6b7753;
+      --whatsapp: #25D366;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(rgba(244,255,224,.72), rgba(238,247,215,.88)),
+        url("fondo-gracias-massuar.jpg") center / cover no-repeat fixed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .thank-card {
+      width: 100%;
+      max-width: 720px;
+      background: rgba(255,255,255,.94);
+      border: 1px solid rgba(219,231,196,.95);
+      border-radius: 28px;
+      box-shadow: 0 18px 55px rgba(70,85,42,.25);
+      padding: 42px 34px;
+      text-align: center;
+      backdrop-filter: blur(6px);
+    }
+
+    .check {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: #14b866;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 52px;
+      font-weight: 900;
+      margin-bottom: 18px;
+      box-shadow: 0 10px 28px rgba(20,184,102,.28);
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      color: var(--massuar-green);
+      font-size: clamp(42px, 7vw, 64px);
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+
+    p {
+      margin: 8px auto;
+      max-width: 560px;
+      color: var(--muted);
+      font-size: clamp(17px, 2.5vw, 22px);
+      line-height: 1.45;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      padding: 14px 18px;
+      border-radius: 15px;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 16px;
+      transition: transform .15s ease, filter .15s ease;
+    }
+
+    .btn:hover {
+      filter: brightness(.96);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--massuar-green);
+      color: #fff;
+    }
+
+    .btn-whatsapp {
+      background: var(--whatsapp);
+      color: #fff;
+    }
+
+    .btn-light {
+      background: #eef7d7;
+      color: var(--massuar-green);
+      border: 1px solid #dbe7c4;
+    }
+
+    .small-note {
+      margin-top: 22px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding: 16px;
+        background-attachment: scroll;
+      }
+
+      .thank-card {
+        padding: 34px 22px;
+      }
+
+      .buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="card">
-<h1>¡Gracias!</h1>
-<p>Tu pedido fue recibido correctamente.</p>
-<p>En breve nos pondremos en contacto.</p>
-<a class="btn" href="index.html">Realizar otro pedido</a>
-</div>
+  <main class="thank-card">
+    <div class="check" aria-hidden="true">✓</div>
+    <h1>¡Gracias!</h1>
+    <p>Tu pedido fue recibido correctamente.</p>
+    <p>En breve nos pondremos en contacto para confirmar los detalles.</p>
+
+    <div class="buttons">
+      <a class="btn btn-whatsapp" href="https://wa.me/5491164448776" target="_blank" rel="noopener">Contacto</a>
+      <a class="btn btn-light" href="https://massuar.com.ar/wp-content/uploads/2026/05/MASSUAR_CATALOGO.-2026.pdf" target="_blank" rel="noopener">Catálogo</a>
+      <a class="btn btn-primary" href="index.html">Nuevo pedido</a>
+    </div>
+
+    <p class="small-note">MASSUAR · Gracias por confiar en nosotros.</p>
+  </main>
 </body>
 </html>
