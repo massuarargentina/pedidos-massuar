@@ -242,7 +242,7 @@ setInterval(() => {
    Nota: esto es una barrera simple para clientes, no seguridad bancaria.
 */
 (function(){
-  const MASSUAR_PASSWORD = "MASSUAR";
+  const MASSUAR_PASSWORD = "Massuar";
 
   const gate = document.getElementById("accessGate");
   const content = document.getElementById("protectedContent");
