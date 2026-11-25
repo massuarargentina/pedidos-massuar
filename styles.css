@@ -311,3 +311,10 @@ body {
 
 
 
+
+/* Respuesta de Jotform: evitar conservar la altura del catálogo. */
+#formFrame.order-response {
+  min-height: 0;
+  height: 85vh;
+  height: 85dvh;
+}

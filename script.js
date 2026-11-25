@@ -9,6 +9,28 @@ const exitOrder = document.getElementById('exitOrder');
 let frameDoc = null;
 let lastSignature = '';
 let thankYouHandled = false;
+let orderNavigationPending = false;
+
+function resetOrderScroll() {
+  try { frame.contentWindow.scrollTo(0, 0); } catch (e) { /* Jotform externo */ }
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+}
+
+function showOrderDestination() {
+  // La respuesta externa no permite leer su altura ni controlar su scroll.
+  const external = !getDoc();
+  frame.classList.toggle('order-response', external);
+  if (external) frame.style.height = '';
+  else resizeFrame();
+
+  requestAnimationFrame(() => {
+    resetOrderScroll();
+    if (external && !frame.hidden) {
+      // En móvil el carrito está encima: mostrar el inicio de la respuesta.
+      frame.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
+  });
+}
 
 function getDoc() {
   try { return frame.contentDocument || frame.contentWindow.document; }
@@ -114,8 +136,8 @@ function showMassuarThankYou() {
   }
 
   setTimeout(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     resizeFrame();
+    resetOrderScroll();
   }, 250);
 }
 
@@ -159,6 +181,7 @@ function injectFrameHelpers() {
   doc.addEventListener('input', updateCart, true);
   doc.addEventListener('change', updateCart, true);
   doc.addEventListener('keyup', updateCart, true);
+  doc.addEventListener('submit', () => { orderNavigationPending = true; }, true);
 }
 
 function resizeFrame() {
@@ -190,12 +213,10 @@ function finishOrderFromCart() {
     return;
   }
 
-  submitButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-  setTimeout(() => {
-    submitButton.click();
-    resizeFrame();
-  }, 350);
+  // Conservar el botón original y sus validaciones, sin mover la vista.
+  orderNavigationPending = true;
+  submitButton.click();
+  resizeFrame();
 }
 
 if (finishOrder) {
@@ -222,10 +243,14 @@ clearCart.addEventListener('click', () => {
 });
 
 frame.addEventListener('load', () => {
+  const navigated = orderNavigationPending || frameDoc !== null;
+  orderNavigationPending = false;
+  if (getDoc()) frame.classList.remove('order-response');
   injectFrameHelpers();
   updateCart();
   handleThankYouIfNeeded();
   resizeFrame();
+  if (navigated && !thankYouHandled) showOrderDestination();
 });
 
 setInterval(() => {
